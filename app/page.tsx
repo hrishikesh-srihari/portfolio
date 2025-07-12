@@ -84,32 +84,32 @@ const Portfolio = () => {
     {
       id: "01",
       title: "Opennote",
-      subtitle: "CO-FOUNDER & FULL STACK ENGINEER",
-      period: "Apr. 2024 - Present",
+      subtitle: "CO-FOUNDER",
+      period: "Feb. 2025 - Present",
       description:
-        "The world's premier interactive education platform built specifically for students. 40,000+ users in < 4 weeks. VC-backed.",
+        "The interactive AI tutor that knows you. Backed by YC and Afore Capital.",
       tags: ["Python", "React", "TypeScript", "ML/AI"],
       imageSrc: "/opennote.png",
       links: {
-        live: "https://opennote.me",
+        live: "https://opennote.com",
       },
       metrics: {
-        "audience reached": "4.6M+",
-        "launch month users": "40,000+",
+        "users": "55,000+",
+        "vc backing": "1.35M+",
       },
     },
     {
       id: "02",
       title: "Browserbase",
-      subtitle: "CONTRACT SOFTWARE ENGINEER",
-      period: "Mar. 2025 - Present",
+      subtitle: "SOFTWARE ENGINEER",
+      period: "Mar. 2025 - May 2025",
       description:
-        "Collaborating with the Browserbase team to build a cool new tool :)",
+        "Worked on Director :)",
       tags: ["Browser Agents"],
       imageSrc: "/browserbase.png",
       links: {
         // github: "#",
-        live: "https://browserbase.com",
+        live: "https://director.ai",
       },
       metrics: {
         // reliability: "+50%",
@@ -123,7 +123,7 @@ const Portfolio = () => {
       subtitle: "SOFTWARE ENGINEERING RESEARCH INTERN",
       period: "Sept. 2023 - May 2024",
       description:
-        "Led Mission Control Console development integrating biomedical sensors and navigation systems. Collaborated with Artemis astronauts during on-site testing for spacewalk activity optimization.",
+        "Led Mission Control Console development. Worked with Artemis astronauts.",
       tags: ["Python", "Real-time Systems", "3D Mapping Algorithms"],
       imageSrc: "/nasa_suits.png",
       links: {
@@ -141,7 +141,7 @@ const Portfolio = () => {
       subtitle: "TEACHING ASSISTANT",
       period: "Mar. 2024 - Present",
       description:
-        "Teaching Assistant for Boolean Logic and Discrete Structures, delivering curriculum content to 400+ students. Collaborate on lecture and test content preparation with course staff, and host weekly office hours.",
+        "Undergraduate teaching assistant for discrete math and boolean logic.",
       tags: [
         "Boolean Logic",
         "Discrete Math",
@@ -163,7 +163,7 @@ const Portfolio = () => {
     {
     id: "01",
     title: "Runway",
-    subtitle: "Vercel for AI Models",
+    subtitle: "VERCEL FOR AI MODELS",
     description:
         "Generate full LoRA datasets, train any model on H100 GPUs, and deploy—to our sandbox, an OpenAI API SDK endpoint to request, or download the weights to deploy yourself. All using natural language.",
     tags: ["Perplexity", "Websocket", "Browserbase/Stagehand", "ML/AI", "Next.js"],
@@ -179,7 +179,7 @@ const Portfolio = () => {
     {
       id: "02",
       title: "Sift",
-      subtitle: "Supercharged Semantic Search",
+      subtitle: "SUPERCHARGED SEMANTIC SEARCH",
       description:
         "Simultaneously search files in your filesystem, GitHub, Notion, Slack, Discord, and the Google Suite, simply with natural language. ",
       tags: [
@@ -294,14 +294,14 @@ const Portfolio = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="max-w-7xl mx-auto px-4 py-32 z-20"
           >
-            <motion.div
+            {/* <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
               className="mono text-sm text-gray-500 mb-4 tracking-widest"
             >
               PUSHING THE BOUNDARIES OF DIGITAL EXPERIENCES
-            </motion.div>
+            </motion.div> */}
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -316,8 +316,7 @@ const Portfolio = () => {
               transition={{ duration: 0.5, delay: 0.5 }}
               className="text-gray-400 text-xl md:text-2xl max-w-2xl mb-8 font-light"
             >
-              I love to build impactful full-stack projects with modern
-              technologies and high-performance.
+              I like building cool stuff that people love to use
             </motion.p>
           </motion.div>
         </section>
@@ -357,7 +356,7 @@ const Portfolio = () => {
               className="space-y-4 pb-4"
             >
               <div className="mono text-sm text-gray-500 mb-4 tracking-widest">
-                FEATURED PROJECTS
+                PROJECTS
               </div>
               <h2 className="text-4xl md:text-5xl font-extralight mb-16 tracking-tight">
                 What I've Built
@@ -406,7 +405,7 @@ const Portfolio = () => {
                     <Globe className="text-violet-400" size={24} />
                     <div>
                       <div className="text-sm text-gray-500">Location</div>
-                      <div className="text-lg">Irvine, CA</div>
+                      <div className="text-lg">San Francisco, CA</div>
                     </div>
                   </div>
                 </div>
@@ -518,12 +517,12 @@ const Portfolio = () => {
                   >
                     Get in Touch
                   </a>
-                  <a
+                  {/* <a
                     href="/Rishi_Srihari_Resume.pdf"
                     className="px-6 py-3 border border-gray-700 hover:border-gray-600 rounded-lg transition-colors"
                   >
                     Download CV
-                  </a>
+                  </a> */}
                 </div>
               </div>
 
