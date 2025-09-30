@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"] });
+const neueHaas = localFont({
+  src: "./fonts/NeueHaasGrotesk-Medium.ttf",
+  variable: "--font-neue-haas",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Rishi's Portfolio",
@@ -15,7 +19,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={jetbrainsMono.className}>{children}</body>
+      <body className={neueHaas.className}>{children}</body>
     </html>
   );
 }
