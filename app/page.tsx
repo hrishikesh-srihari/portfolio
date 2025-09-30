@@ -15,10 +15,10 @@ const TabButton = ({ tab, isActive, onClick }: { tab: { id: string; label: strin
   const [isHovered, setIsHovered] = useState(false);
 
   // Create a continuous path that loops around multiple times with variations
-  const createMessyCirclePath = () => {
+  const createMessyCirclePath = (isMobile = false) => {
     const centerX = 40;
     const centerY = 17;
-    const baseRx = 35;
+    const baseRx = isMobile ? 28 : 35; // Smaller radius on mobile
     const baseRy = 12;
 
     // Generate 2.5 loops with slight variations in each revolution using smooth curves
@@ -65,8 +65,9 @@ const TabButton = ({ tab, isActive, onClick }: { tab: { id: string; label: strin
       }`}
     >
       <span className="relative z-10">{tab.label}</span>
+      {/* Circle appears on hover on desktop (md+) */}
       <svg
-        className="absolute -left-2 top-1/2 -translate-y-1/2 pointer-events-none"
+        className="absolute -left-2 top-1/2 -translate-y-1/2 pointer-events-none hidden md:block"
         width="80"
         height="34"
         viewBox="0 0 80 34"
@@ -84,6 +85,30 @@ const TabButton = ({ tab, isActive, onClick }: { tab: { id: string; label: strin
           style={{
             strokeDasharray: pathLength,
             strokeDashoffset: isHovered ? 0 : pathLength,
+            transition: "stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
+          }}
+        />
+      </svg>
+      {/* Circle appears when active on mobile */}
+      <svg
+        className="absolute -left-2 top-1/2 -translate-y-1/2 pointer-events-none md:hidden"
+        width="80"
+        height="34"
+        viewBox="0 0 80 34"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d={createMessyCirclePath()}
+          stroke="currentColor"
+          strokeWidth="1"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+          className="text-black/30"
+          style={{
+            strokeDasharray: pathLength,
+            strokeDashoffset: isActive ? 0 : pathLength,
             transition: "stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
           }}
         />
