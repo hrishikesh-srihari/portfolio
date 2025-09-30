@@ -9,7 +9,10 @@ const neueHaas = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Rishi's Portfolio",
+  title: "Rishi Srihari",
+  icons: {
+    icon: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({
