@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import localFont from "next/font/local";
 import Image from "next/image";
 
-export const neueHaas = localFont({
+const neueHaas = localFont({
   src: "./fonts/NeueHaasGrotesk-Medium.ttf",
   display: "swap",
   preload: true,
