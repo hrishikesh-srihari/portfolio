@@ -167,12 +167,12 @@ const Portfolio = () => {
                 </p>
 
                 <p>
-                  Before this, I was previously one of the first engineers on the {" "}
+                  Before this, I briefly worked on {" "}
                   <a href="https://director.ai" target="_blank" rel="noopener noreferrer" className="underline decoration-1 underline-offset-2 hover:text-black transition-colors">
                     Director 
                   </a>
                   {" "}
-                  team at {" "}
+                  at {" "}
                   <a href="https://browserbase.com" target="_blank" rel="noopener noreferrer" className="underline decoration-1 underline-offset-2 hover:text-black transition-colors">
                     Browserbase
                   </a>. 
