@@ -102,9 +102,9 @@ const Portfolio = () => {
 
   return (
 
-      <div className="relative z-10 flex min-h-screen">
-        <aside className="w-48 flex-shrink-0 p-8 pt-16">
-          <nav className="space-y-3">
+      <div className="relative z-10 flex flex-col md:flex-row min-h-screen">
+        <aside className="w-full md:w-48 flex-shrink-0 p-6 pt-8 md:p-8 md:pt-16">
+          <nav className="flex md:flex-col gap-6 md:gap-3">
             {tabs.map((tab) => (
               <TabButton
                 key={tab.id}
@@ -116,10 +116,10 @@ const Portfolio = () => {
           </nav>
         </aside>
 
-        <main className="flex-1 p-8 md:p-16 max-w-3xl relative">
+        <main className="flex-1 px-6 md:p-8 lg:p-16 max-w-3xl relative">
           {activeTab === "about" && (
-            <div className="space-y-8 lg:pr-56">
-              <div className="absolute -right-12 top-20 hidden lg:block">
+            <div className="space-y-8 lg:pr-56 relative">
+              <div className="absolute right-0 top-0 hidden lg:block">
                 <div className="w-48 h-64 relative">
                   <Image
                     src="/rishi.JPG"
@@ -186,6 +186,18 @@ const Portfolio = () => {
                   </a>
                   .
                 </p>
+
+                <div className="lg:hidden mt-16 flex justify-center">
+                  <div className="w-48 h-64 relative">
+                    <Image
+                      src="/rishi.JPG"
+                      alt="Rishi"
+                      fill
+                      className="object-cover rounded-sm opacity-80"
+                      priority
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           )}
