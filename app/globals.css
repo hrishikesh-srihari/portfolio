@@ -7,11 +7,17 @@
   --foreground: #000000;
 }
 
+.dark {
+  --background: #0a0a0b;
+  --foreground: #e8e6e3;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 @layer utilities {

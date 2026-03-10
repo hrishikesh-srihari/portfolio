@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import localFont from "next/font/local";
 import Image from "next/image";
+import DarkModeToggle from "./components/DarkModeToggle";
 
 const neueHaas = localFont({
   src: "./fonts/NeueHaasGrotesk-Medium.ttf",
@@ -61,7 +62,7 @@ const TabButton = ({ tab, isActive, onClick }: { tab: { id: string; label: strin
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       className={`relative block text-left transition-colors ${
-        isActive ? "text-black" : "text-black/40 hover:text-black/60"
+        isActive ? "text-black dark:text-white" : "text-black/40 dark:text-white/40 hover:text-black/60 dark:hover:text-white/60"
       }`}
     >
       <span className="relative z-10">{tab.label}</span>
@@ -81,7 +82,7 @@ const TabButton = ({ tab, isActive, onClick }: { tab: { id: string; label: strin
           strokeLinecap="round"
           strokeLinejoin="round"
           fill="none"
-          className="text-black/30"
+          className="text-black/30 dark:text-white/30"
           style={{
             strokeDasharray: pathLength,
             strokeDashoffset: isHovered ? 0 : pathLength,
@@ -105,7 +106,7 @@ const TabButton = ({ tab, isActive, onClick }: { tab: { id: string; label: strin
           strokeLinecap="round"
           strokeLinejoin="round"
           fill="none"
-          className="text-black/30"
+          className="text-black/30 dark:text-white/30"
           style={{
             strokeDasharray: pathLength,
             strokeDashoffset: isActive ? 0 : pathLength,
@@ -129,7 +130,7 @@ const Portfolio = () => {
 
       <div className="relative z-10 flex flex-col md:flex-row min-h-screen">
         <aside className="w-full md:w-48 flex-shrink-0 p-6 pt-8 md:p-8 md:pt-16">
-          <nav className="flex md:flex-col gap-6 md:gap-3">
+          <nav className="flex md:flex-col gap-6 md:gap-3 items-center md:items-start">
             {tabs.map((tab) => (
               <TabButton
                 key={tab.id}
@@ -138,6 +139,9 @@ const Portfolio = () => {
                 onClick={() => setActiveTab(tab.id)}
               />
             ))}
+            <div className="ml-auto md:ml-0 md:mt-5">
+              <DarkModeToggle />
+            </div>
           </nav>
         </aside>
 
@@ -156,10 +160,10 @@ const Portfolio = () => {
                 </div>
               </div>
 
-              <div className="space-y-6 text-black/50 leading-relaxed">
+              <div className="space-y-6 text-black/50 dark:text-white/50 leading-relaxed">
                 <p>
                   19. Co-founder and CEO of{" "}
-                  <a href="https://opennote.com" target="_blank" rel="noopener noreferrer" className="underline decoration-1 underline-offset-2 hover:text-black transition-colors">
+                  <a href="https://opennote.com" target="_blank" rel="noopener noreferrer" className="underline decoration-1 underline-offset-2 hover:text-black dark:hover:text-white transition-colors">
                     Opennote 
                   </a>
                   {" - "}building the home for your mind's best work. Backed by Y Combinator, Acrew Capital, Paul Graham, and other great partners.
@@ -168,12 +172,12 @@ const Portfolio = () => {
 
                 <p>
                   Before this, I briefly worked on {" "}
-                  <a href="https://director.ai" target="_blank" rel="noopener noreferrer" className="underline decoration-1 underline-offset-2 hover:text-black transition-colors">
+                  <a href="https://director.ai" target="_blank" rel="noopener noreferrer" className="underline decoration-1 underline-offset-2 hover:text-black dark:hover:text-white transition-colors">
                     Director 
                   </a>
                   {" "}
                   at {" "}
-                  <a href="https://browserbase.com" target="_blank" rel="noopener noreferrer" className="underline decoration-1 underline-offset-2 hover:text-black transition-colors">
+                  <a href="https://browserbase.com" target="_blank" rel="noopener noreferrer" className="underline decoration-1 underline-offset-2 hover:text-black dark:hover:text-white transition-colors">
                     Browserbase
                   </a>. 
                 </p>
@@ -193,20 +197,20 @@ const Portfolio = () => {
                 <p>
                   You can find me on{" "}
                   {" "}
-                  <a href="https://linkedin.com/in/hrishikesh-srihari" target="_blank" rel="noopener noreferrer" className="underline decoration-1 underline-offset-2 hover:text-black transition-colors">
+                  <a href="https://linkedin.com/in/hrishikesh-srihari" target="_blank" rel="noopener noreferrer" className="underline decoration-1 underline-offset-2 hover:text-black dark:hover:text-white transition-colors">
                     LinkedIn
                   </a>
                   , {" "}
-                  <a href="https://x.com/rishi_srihari" target="_blank" rel="noopener noreferrer" className="underline decoration-1 underline-offset-2 hover:text-black transition-colors">
+                  <a href="https://x.com/rishi_srihari" target="_blank" rel="noopener noreferrer" className="underline decoration-1 underline-offset-2 hover:text-black dark:hover:text-white transition-colors">
                     X (Twitter)
                   </a>
                   ,{" "}
-                  <a href="https://instagram.com/rishisrihari" target="_blank" rel="noopener noreferrer" className="underline decoration-1 underline-offset-2 hover:text-black transition-colors">
+                  <a href="https://instagram.com/rishisrihari" target="_blank" rel="noopener noreferrer" className="underline decoration-1 underline-offset-2 hover:text-black dark:hover:text-white transition-colors">
                     Instagram
                   </a>
                   ,{" "}
                   or{" "}
-                  <a href="mailto:rishi@opennote.me" className="underline decoration-1 underline-offset-2 hover:text-black transition-colors">
+                  <a href="mailto:rishi@opennote.me" className="underline decoration-1 underline-offset-2 hover:text-black dark:hover:text-white transition-colors">
                     email
                   </a>
                   .
@@ -232,28 +236,28 @@ const Portfolio = () => {
               <div className="space-y-10">
                 <div>
                   <div className="flex items-baseline gap-2 mb-2">
-                    <h3 className="text-xl">Runway</h3>
+                    <h3 className="text-xl dark:text-white">Runway</h3>
                     <a
                       href="https://runway0.vercel.app/"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-sm text-black/40 hover:text-black transition-colors"
+                      className="text-sm text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors"
                     >
                       ↗
                     </a>
                   </div>
-                  <div className="text-sm text-black/40 mb-3">Vercel for AI models</div>
-                  <p className="text-black/50 leading-relaxed">
+                  <div className="text-sm text-black/40 dark:text-white/40 mb-3">Vercel for AI models</div>
+                  <p className="text-black/50 dark:text-white/50 leading-relaxed">
                     Generate LoRA datasets, train models, and deploy / download the weights. All using natural language. 1M+ views on X and LinkedIn.
                   </p>
                 </div>
 
                 <div>
                   <div className="mb-2">
-                    <h3 className="text-xl">Sift</h3>
+                    <h3 className="text-xl dark:text-white">Sift</h3>
                   </div>
-                  <div className="text-sm text-black/40 mb-3">Supercharged semantic search</div>
-                  <p className="text-black/50 leading-relaxed">
+                  <div className="text-sm text-black/40 dark:text-white/40 mb-3">Supercharged semantic search</div>
+                  <p className="text-black/50 dark:text-white/50 leading-relaxed">
                     Simultaneously search files in your filesystem, GitHub, Notion, Slack, Discord, and Google Suite using natural language. Supports 200,000+ document base with sub-second search speed.
                   </p>
                 </div>
