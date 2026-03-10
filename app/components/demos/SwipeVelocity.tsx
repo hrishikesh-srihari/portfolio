@@ -11,200 +11,147 @@ import {
 
 type VelocityZone = "idle" | "hesitant" | "casual" | "decisive";
 
-const zoneColors: Record<VelocityZone, string> = {
-  idle: "rgba(255,255,255,0.08)",
-  hesitant: "rgba(196,169,214,0.5)",
-  casual: "rgba(147,177,214,0.5)",
-  decisive: "rgba(214,165,147,0.6)",
-};
-
-const zoneLabels: Record<VelocityZone, string> = {
-  idle: "",
-  hesitant: "hesitant",
-  casual: "casual",
-  decisive: "decisive",
-};
+const zones: { id: Exclude<VelocityZone, "idle">; label: string; color: string }[] = [
+  { id: "hesitant", label: "hesitant", color: "#a78bfa" },
+  { id: "casual", label: "casual", color: "#60a5fa" },
+  { id: "decisive", label: "decisive", color: "#f87171" },
+];
 
 export default function SwipeVelocity() {
   const [isVisible, setIsVisible] = useState(true);
   const [currentZone, setCurrentZone] = useState<VelocityZone>("idle");
   const [lastOutcome, setLastOutcome] = useState<VelocityZone | null>(null);
   const x = useMotionValue(0);
-  const rotateZ = useTransform(x, [-200, 0, 200], [-5, 0, 5]);
-  const opacity = useTransform(x, [-300, -150, 0, 150, 300], [0.3, 0.7, 1, 0.7, 0.3]);
+  const rotateZ = useTransform(x, [-200, 0, 200], [-4, 0, 4]);
+  const opacity = useTransform(x, [-240, -120, 0, 120, 240], [0.3, 0.75, 1, 0.75, 0.3]);
+  const posRef = useRef<{ x: number; t: number }[]>([]);
 
-  const positionsRef = useRef<{ x: number; t: number }[]>([]);
-
-  // Track velocity during drag
   useEffect(() => {
-    const unsubscribe = x.on("change", (latest) => {
+    const unsub = x.on("change", (latest) => {
       const now = performance.now();
-      positionsRef.current.push({ x: latest, t: now });
-      // Keep only last 120ms of data
-      const cutoff = now - 120;
-      positionsRef.current = positionsRef.current.filter((p) => p.t >= cutoff);
-
-      // Calculate velocity
-      const pts = positionsRef.current;
+      posRef.current.push({ x: latest, t: now });
+      posRef.current = posRef.current.filter((p) => p.t >= now - 120);
+      const pts = posRef.current;
       if (pts.length >= 2) {
-        const first = pts[0];
-        const last = pts[pts.length - 1];
-        const dt = last.t - first.t;
+        const dt = pts[pts.length - 1].t - pts[0].t;
         if (dt > 0) {
-          const vel = Math.abs(last.x - first.x) / dt; // px/ms
-          if (vel < 0.2) {
-            setCurrentZone("hesitant");
-          } else if (vel < 0.7) {
-            setCurrentZone("casual");
-          } else {
-            setCurrentZone("decisive");
-          }
+          const vel = Math.abs(pts[pts.length - 1].x - pts[0].x) / dt;
+          setCurrentZone(vel < 0.2 ? "hesitant" : vel < 0.7 ? "casual" : "decisive");
         }
       }
     });
-    return () => unsubscribe();
+    return () => unsub();
   }, [x]);
 
   const handleDragEnd = useCallback((_: unknown, info: PanInfo) => {
     const absVx = Math.abs(info.velocity.x);
-    const absOffset = Math.abs(info.offset.x);
-
-    // Decisive: fast swipe
-    if (absVx > 600 || (absVx > 300 && absOffset > 80)) {
-      const dir = info.offset.x > 0 ? 1 : -1;
+    const absOff = Math.abs(info.offset.x);
+    if (absVx > 600 || (absVx > 300 && absOff > 80)) {
       setLastOutcome("decisive");
-      x.set(dir * 700);
-      setTimeout(() => {
-        setIsVisible(false);
-        setCurrentZone("idle");
-      }, 50);
+      x.set((info.offset.x > 0 ? 1 : -1) * 600);
+      setTimeout(() => { setIsVisible(false); setCurrentZone("idle"); }, 40);
       return;
     }
-
-    // Casual: moderate swipe
-    if (absVx > 150 && absOffset > 60) {
-      const dir = info.offset.x > 0 ? 1 : -1;
+    if (absVx > 150 && absOff > 60) {
       setLastOutcome("casual");
-      x.set(dir * 500);
-      setTimeout(() => {
-        setIsVisible(false);
-        setCurrentZone("idle");
-      }, 100);
+      x.set((info.offset.x > 0 ? 1 : -1) * 400);
+      setTimeout(() => { setIsVisible(false); setCurrentZone("idle"); }, 80);
       return;
     }
-
-    // Hesitant: rubber-band back
     setLastOutcome("hesitant");
     setCurrentZone("idle");
-    positionsRef.current = [];
+    posRef.current = [];
   }, [x]);
 
-  const handleDragStart = () => {
-    positionsRef.current = [];
-  };
-
-  // Re-appear after dismissal
   useEffect(() => {
     if (!isVisible) {
       const tid = setTimeout(() => {
         x.set(0);
         setIsVisible(true);
         setCurrentZone("idle");
-        positionsRef.current = [];
+        posRef.current = [];
       }, 800);
       return () => clearTimeout(tid);
     }
   }, [isVisible, x]);
 
   return (
-    <div className="w-full max-w-[800px] mx-auto" aria-label="Velocity-aware swipe dismissal demo">
-      {/* Card area */}
-      <div className="relative flex items-center justify-center min-h-[200px] mb-8">
+    <div className="w-full max-w-[800px] mx-auto" aria-label="Velocity-aware swipe demo">
+      {/* Card */}
+      <div className="relative flex items-center justify-center min-h-[150px] mb-6">
         <AnimatePresence mode="wait">
           {isVisible && (
             <motion.div
-              key="velocity-card"
-              initial={{ opacity: 0, y: 8 }}
+              key="vel-card"
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={
-                lastOutcome === "decisive"
-                  ? {
-                      opacity: 0,
-                      transition: {
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 25,
-                      },
-                    }
-                  : lastOutcome === "casual"
-                  ? {
-                      opacity: 0,
-                      transition: { duration: 0.4, ease: "easeOut" },
-                    }
-                  : { opacity: 0 }
-              }
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
               style={{ x, rotateZ, opacity }}
               drag="x"
               dragConstraints={{ left: 0, right: 0 }}
               dragElastic={0.8}
-              onDragStart={handleDragStart}
+              onDragStart={() => { posRef.current = []; }}
               onDragEnd={handleDragEnd}
-              className="w-[300px] bg-white/[0.06] border border-white/[0.08] rounded-xl p-5 select-none cursor-grab active:cursor-grabbing"
+              className="w-[320px] rounded-xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)] p-3.5 select-none cursor-grab active:cursor-grabbing"
               role="group"
               aria-label="Swipe this card at different speeds"
             >
-              <p className="text-white/80 text-sm font-medium mb-1.5">Swipe this card</p>
-              <p className="text-white/40 text-[13px] leading-relaxed">
-                Try different speeds. Fast, slow, hesitant.
-              </p>
-              <p className="text-white/15 text-[10px] font-mono mt-3">
-                Drag left or right
-              </p>
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M5 12h14M12 5l7 7-7 7" />
+                  </svg>
+                </div>
+                <div className="flex-1 pt-px">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <p className="text-[13px] font-medium text-stone-900 leading-tight">Swipe this card</p>
+                    <span className="text-[11px] text-stone-400 flex-shrink-0">now</span>
+                  </div>
+                  <p className="text-[12.5px] text-stone-500 leading-snug mt-0.5">
+                    Try fast, slow, or hesitant. See what happens.
+                  </p>
+                </div>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
       {/* Velocity indicator */}
-      <div className="flex items-center justify-center gap-1 max-w-[300px] mx-auto">
-        {(["hesitant", "casual", "decisive"] as VelocityZone[]).map((zone) => {
-          const isActive = currentZone === zone;
+      <div className="flex items-center gap-1 max-w-[280px] mx-auto">
+        {zones.map((z) => {
+          const active = currentZone === z.id;
           return (
-            <div key={zone} className="flex-1 flex flex-col items-center gap-2">
+            <div key={z.id} className="flex-1 flex flex-col items-center gap-1.5">
               <div
                 className="w-full h-[3px] rounded-full transition-all duration-150"
-                style={{
-                  backgroundColor: isActive
-                    ? zoneColors[zone]
-                    : "rgba(255,255,255,0.06)",
-                }}
+                style={{ backgroundColor: active ? z.color : "#e7e5e4" }}
               />
               <span
-                className={`text-[10px] font-mono transition-all duration-150 ${
-                  isActive ? "text-white/50" : "text-white/15"
-                }`}
+                className="text-[10px] font-mono transition-colors duration-150"
+                style={{ color: active ? z.color : "#c4c0bb" }}
               >
-                {zoneLabels[zone]}
+                {z.label}
               </span>
             </div>
           );
         })}
       </div>
 
-      {/* Last outcome */}
+      {/* Outcome */}
       <AnimatePresence>
         {lastOutcome && !isVisible && (
           <motion.p
-            initial={{ opacity: 0, y: 4 }}
+            initial={{ opacity: 0, y: 3 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="text-center text-white/25 text-[11px] font-mono mt-6"
+            className="text-center text-stone-400 text-[11px] mt-5"
           >
-            {lastOutcome === "decisive" && "Decisive. That one's gone for good."}
-            {lastOutcome === "casual" && "Casual. Cleared, but without urgency."}
-            {lastOutcome === "hesitant" && "Hesitant. It came back — maybe you weren't sure."}
+            {lastOutcome === "decisive" && "Gone. You meant that."}
+            {lastOutcome === "casual" && "Cleared without urgency."}
+            {lastOutcome === "hesitant" && "It came back. Maybe you weren't sure."}
           </motion.p>
         )}
       </AnimatePresence>

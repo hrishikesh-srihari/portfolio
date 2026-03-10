@@ -13,99 +13,106 @@ type Feeling = "fine" | "slightly-off" | "uncomfortable";
 
 interface CardData {
   id: string;
+  appName: string;
   title: string;
   body: string;
+  time: string;
   style: "spam" | "message" | "warning";
 }
 
 const cards: CardData[] = [
   {
     id: "spam",
+    appName: "Promo",
     title: "Congratulations!",
     body: "You've won a $500 gift card! Tap to claim.",
+    time: "now",
     style: "spam",
   },
   {
     id: "message",
+    appName: "Messages",
     title: "Mom",
     body: "Can you call me when you get a chance?",
+    time: "2m ago",
     style: "message",
   },
   {
     id: "warning",
+    appName: "Notes",
     title: "Unsaved draft",
     body: "3 pages of notes will be lost.",
+    time: "just now",
     style: "warning",
   },
 ];
 
-const styleMap = {
-  spam: {
-    bg: "bg-white/[0.07]",
-    border: "border-white/[0.1]",
-    titleColor: "text-emerald-400/70",
-    bodyColor: "text-white/40",
-    accent: "text-emerald-400/40",
-  },
-  message: {
-    bg: "bg-white/[0.05]",
-    border: "border-white/[0.08]",
-    titleColor: "text-blue-300/70",
-    bodyColor: "text-white/50",
-    accent: "text-blue-300/30",
-  },
-  warning: {
-    bg: "bg-white/[0.05]",
-    border: "border-amber-500/[0.12]",
-    titleColor: "text-amber-400/80",
-    bodyColor: "text-white/50",
-    accent: "text-amber-400/30",
-  },
+const iconColors = {
+  spam: { bg: "from-green-400 to-green-500", iconStroke: "white" },
+  message: { bg: "from-blue-500 to-blue-600", iconStroke: "white" },
+  warning: { bg: "from-amber-400 to-amber-500", iconStroke: "white" },
 };
 
-function SwipeCard({
-  card,
-  onDismiss,
-}: {
-  card: CardData;
-  onDismiss: () => void;
-}) {
+const icons = {
+  spam: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+    </svg>
+  ),
+  message: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  ),
+  warning: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+      <line x1="12" y1="9" x2="12" y2="13" />
+      <line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  ),
+};
+
+function SwipeCard({ card, onDismiss }: { card: CardData; onDismiss: () => void }) {
   const x = useMotionValue(0);
-  const rotateZ = useTransform(x, [-200, 0, 200], [-6, 0, 6]);
-  const opacity = useTransform(x, [-200, -100, 0, 100, 200], [0.5, 0.8, 1, 0.8, 0.5]);
-  const s = styleMap[card.style];
+  const rotateZ = useTransform(x, [-180, 0, 180], [-4, 0, 4]);
+  const opacity = useTransform(x, [-160, -80, 0, 80, 160], [0.4, 0.85, 1, 0.85, 0.4]);
 
   const handleDragEnd = (_: unknown, info: PanInfo) => {
-    if (Math.abs(info.offset.x) > 100 || Math.abs(info.velocity.x) > 500) {
-      const dir = info.offset.x > 0 ? 1 : -1;
-      x.set(dir * 600);
-      setTimeout(onDismiss, 50);
+    if (Math.abs(info.offset.x) > 90 || Math.abs(info.velocity.x) > 400) {
+      x.set((info.offset.x > 0 ? 1 : -1) * 500);
+      setTimeout(onDismiss, 40);
     }
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, x: 200, transition: { type: "spring", stiffness: 400, damping: 30 } }}
-      transition={{ duration: 0.3 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.25 }}
       style={{ x, rotateZ, opacity }}
       drag="x"
       dragConstraints={{ left: 0, right: 0 }}
-      dragElastic={1}
+      dragElastic={0.9}
       onDragEnd={handleDragEnd}
-      className={`${s.bg} border ${s.border} rounded-xl p-4 select-none cursor-grab active:cursor-grabbing w-full`}
+      className="w-full rounded-xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)] p-3 select-none cursor-grab active:cursor-grabbing"
       role="listitem"
       aria-label={`${card.title}: ${card.body}. Swipe to dismiss.`}
     >
-      {card.style === "spam" && (
-        <span className={`text-[10px] font-mono uppercase tracking-wider ${s.accent} block mb-2`}>
-          Promoted
-        </span>
-      )}
-      <p className={`text-sm font-medium mb-1 ${s.titleColor}`}>{card.title}</p>
-      <p className={`text-[13px] leading-relaxed ${s.bodyColor}`}>{card.body}</p>
-      <p className="text-white/15 text-[10px] font-mono mt-3">Swipe to dismiss</p>
+      <div className="flex items-start gap-2.5">
+        <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${iconColors[card.style].bg} flex items-center justify-center flex-shrink-0 shadow-sm`}>
+          {icons[card.style]}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-baseline justify-between gap-1.5">
+            <p className="text-[12px] font-medium text-stone-900 leading-tight truncate">{card.appName}</p>
+            <span className="text-[10px] text-stone-400 flex-shrink-0">{card.time}</span>
+          </div>
+          <p className="text-[12px] font-medium text-stone-600 leading-snug mt-px truncate">{card.title}</p>
+          <p className="text-[11.5px] text-stone-400 leading-snug mt-px truncate">{card.body}</p>
+        </div>
+      </div>
     </motion.div>
   );
 }
@@ -115,28 +122,26 @@ function FeelingPrompt({
   onSelect,
 }: {
   cardId: string;
-  onSelect: (cardId: string, feeling: Feeling) => void;
+  onSelect: (id: string, f: Feeling) => void;
 }) {
-  const feelings: { id: Feeling; label: string }[] = [
-    { id: "fine", label: "Fine" },
-    { id: "slightly-off", label: "Slightly off" },
-    { id: "uncomfortable", label: "Uncomfortable" },
-  ];
-
   return (
     <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: 0.1 }}
-      className="text-center w-full"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25, delay: 0.05 }}
+      className="text-center w-full py-3"
     >
-      <p className="text-white/30 text-[12px] font-mono mb-3">How did that feel?</p>
-      <div className="flex gap-1.5 justify-center">
-        {feelings.map((f) => (
+      <p className="text-[11px] text-stone-400 mb-2.5">How did that feel?</p>
+      <div className="flex gap-1 justify-center">
+        {([
+          { id: "fine" as Feeling, label: "Fine" },
+          { id: "slightly-off" as Feeling, label: "Slightly off" },
+          { id: "uncomfortable" as Feeling, label: "Uncomfortable" },
+        ]).map((f) => (
           <button
             key={f.id}
             onClick={() => onSelect(cardId, f.id)}
-            className="px-3 py-1.5 rounded-md text-[11px] font-mono text-white/35 hover:text-white/60 hover:bg-white/[0.05] transition-all"
+            className="px-2.5 py-1 rounded-md text-[11px] text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition-colors"
           >
             {f.label}
           </button>
@@ -156,8 +161,8 @@ export default function ContextCards() {
     setAwaitingResponse(id);
   }, []);
 
-  const handleFeeling = useCallback((cardId: string, feeling: Feeling) => {
-    setResponses((prev) => ({ ...prev, [cardId]: feeling }));
+  const handleFeeling = useCallback((id: string, f: Feeling) => {
+    setResponses((prev) => ({ ...prev, [id]: f }));
     setAwaitingResponse(null);
   }, []);
 
@@ -168,7 +173,7 @@ export default function ContextCards() {
   };
 
   const allDone = cards.every((c) => responses[c.id]);
-  const feelingLabels: Record<Feeling, string> = {
+  const labels: Record<Feeling, string> = {
     fine: "Fine",
     "slightly-off": "Slightly off",
     uncomfortable: "Uncomfortable",
@@ -176,9 +181,9 @@ export default function ContextCards() {
 
   return (
     <div className="w-full max-w-[800px] mx-auto" aria-label="Context-dependent dismissal demo">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {cards.map((card) => (
-          <div key={card.id} className="flex items-center justify-center min-h-[140px]">
+          <div key={card.id} className="flex items-center justify-center min-h-[100px]">
             <AnimatePresence mode="wait">
               {!dismissed.has(card.id) ? (
                 <SwipeCard
@@ -188,22 +193,19 @@ export default function ContextCards() {
                 />
               ) : awaitingResponse === card.id && !responses[card.id] ? (
                 <FeelingPrompt
-                  key={`feeling-${card.id}`}
+                  key={`feel-${card.id}`}
                   cardId={card.id}
                   onSelect={handleFeeling}
                 />
               ) : responses[card.id] ? (
-                <motion.div
-                  key={`result-${card.id}`}
+                <motion.p
+                  key={`done-${card.id}`}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ duration: 0.3 }}
-                  className="text-center"
+                  className="text-stone-300 text-[11px]"
                 >
-                  <p className="text-white/20 text-[11px] font-mono">
-                    {feelingLabels[responses[card.id]]}
-                  </p>
-                </motion.div>
+                  {labels[responses[card.id]]}
+                </motion.p>
               ) : null}
             </AnimatePresence>
           </div>
@@ -213,30 +215,28 @@ export default function ContextCards() {
       <AnimatePresence>
         {allDone && (
           <motion.div
-            initial={{ opacity: 0, y: 8 }}
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            className="mt-8 text-center"
+            transition={{ duration: 0.3, delay: 0.15 }}
+            className="mt-6 text-center"
           >
-            <div className="inline-flex gap-6 items-center text-[12px] font-mono">
-              <span className="text-white/20">
-                Spam: <span className="text-white/40">{feelingLabels[responses.spam]}</span>
+            <div className="inline-flex flex-wrap gap-x-5 gap-y-1 items-center text-[11px] justify-center">
+              <span className="text-stone-400">
+                Spam: <span className="text-stone-600">{labels[responses.spam]}</span>
               </span>
-              <span className="text-white/10">|</span>
-              <span className="text-white/20">
-                Mom: <span className="text-white/40">{feelingLabels[responses.message]}</span>
+              <span className="text-stone-400">
+                Mom: <span className="text-stone-600">{labels[responses.message]}</span>
               </span>
-              <span className="text-white/10">|</span>
-              <span className="text-white/20">
-                Warning: <span className="text-white/40">{feelingLabels[responses.warning]}</span>
+              <span className="text-stone-400">
+                Warning: <span className="text-stone-600">{labels[responses.warning]}</span>
               </span>
             </div>
-            <div className="mt-4">
+            <div className="mt-2.5">
               <button
                 onClick={handleReset}
-                className="text-white/20 text-[11px] font-mono hover:text-white/40 transition-colors underline underline-offset-2 decoration-white/10"
+                className="text-stone-400 text-[11px] hover:text-stone-600 transition-colors"
               >
-                Reset
+                Try again
               </button>
             </div>
           </motion.div>

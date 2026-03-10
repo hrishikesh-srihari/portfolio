@@ -22,21 +22,21 @@ type DismissMethod =
 const methods: { id: DismissMethod; label: string }[] = [
   { id: "click-x", label: "Click X" },
   { id: "click-outside", label: "Click outside" },
-  { id: "swipe", label: "Swipe away" },
+  { id: "swipe", label: "Swipe" },
   { id: "escape", label: "Escape" },
   { id: "drag-down", label: "Drag down" },
-  { id: "auto-timeout", label: "Auto-timeout" },
-  { id: "undo", label: "Undo-based" },
+  { id: "auto-timeout", label: "Timeout" },
+  { id: "undo", label: "Undo" },
 ];
 
 const exitVariants: Record<DismissMethod, TargetAndTransition> = {
-  "click-x": { opacity: 0, scale: 0.95, transition: { duration: 0.25 } },
-  "click-outside": { opacity: 0, scale: 0.98, transition: { duration: 0.2 } },
-  swipe: {}, // handled by drag
-  escape: { opacity: 0, y: -10, transition: { duration: 0.2 } },
-  "drag-down": {}, // handled by drag
-  "auto-timeout": { opacity: 0, transition: { duration: 0.6 } },
-  undo: { opacity: 0, scale: 0.95, transition: { duration: 0.15 } },
+  "click-x": { opacity: 0, scale: 0.96, transition: { duration: 0.2, ease: "easeOut" } },
+  "click-outside": { opacity: 0, scale: 0.98, transition: { duration: 0.18 } },
+  swipe: {},
+  escape: { opacity: 0, y: -6, transition: { duration: 0.15 } },
+  "drag-down": {},
+  "auto-timeout": { opacity: 0, transition: { duration: 0.5 } },
+  undo: { opacity: 0, scale: 0.96, transition: { duration: 0.12 } },
 };
 
 function NotificationCard({
@@ -48,88 +48,73 @@ function NotificationCard({
 }) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
-  const rotateZ = useTransform(x, [-200, 0, 200], [-8, 0, 8]);
-  const opacityX = useTransform(x, [-200, -100, 0, 100, 200], [0.5, 0.8, 1, 0.8, 0.5]);
-  const scaleY = useTransform(y, [0, 120], [1, 0.95]);
-  const opacityY = useTransform(y, [0, 150], [1, 0.5]);
+  const rotateZ = useTransform(x, [-200, 0, 200], [-5, 0, 5]);
+  const opacityX = useTransform(x, [-180, -80, 0, 80, 180], [0.4, 0.85, 1, 0.85, 0.4]);
+  const scaleY = useTransform(y, [0, 120], [1, 0.97]);
+  const opacityY = useTransform(y, [0, 140], [1, 0.5]);
   const [progress, setProgress] = useState(100);
 
-  // Auto-timeout
   useEffect(() => {
     if (method !== "auto-timeout") return;
     setProgress(100);
-    const startTime = Date.now();
-    const duration = 3000;
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const remaining = Math.max(0, 100 - (elapsed / duration) * 100);
-      setProgress(remaining);
-      if (remaining <= 0) {
-        clearInterval(interval);
-        onDismiss();
-      }
+    const start = Date.now();
+    const dur = 3000;
+    const iv = setInterval(() => {
+      const pct = Math.max(0, 100 - ((Date.now() - start) / dur) * 100);
+      setProgress(pct);
+      if (pct <= 0) { clearInterval(iv); onDismiss(); }
     }, 16);
-    return () => clearInterval(interval);
+    return () => clearInterval(iv);
   }, [method, onDismiss]);
 
-  // Escape key
   useEffect(() => {
     if (method !== "escape") return;
-    const handler = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onDismiss();
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") onDismiss(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
   }, [method, onDismiss]);
 
-  // Click outside
-  const containerRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (method !== "click-outside") return;
-    const handler = (e: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        onDismiss();
-      }
+    const h = (e: MouseEvent) => {
+      if (cardRef.current && !cardRef.current.contains(e.target as Node)) onDismiss();
     };
-    // Delay to prevent immediate dismissal
-    const tid = setTimeout(() => {
-      document.addEventListener("mousedown", handler);
-    }, 100);
-    return () => {
-      clearTimeout(tid);
-      document.removeEventListener("mousedown", handler);
-    };
+    const tid = setTimeout(() => document.addEventListener("mousedown", h), 100);
+    return () => { clearTimeout(tid); document.removeEventListener("mousedown", h); };
   }, [method, onDismiss]);
 
-  const handleSwipeDragEnd = (_: unknown, info: PanInfo) => {
-    if (Math.abs(info.offset.x) > 120 || Math.abs(info.velocity.x) > 500) {
-      const dir = info.offset.x > 0 ? 1 : -1;
-      x.set(dir * 600);
-      setTimeout(onDismiss, 50);
+  const onSwipeEnd = (_: unknown, info: PanInfo) => {
+    if (Math.abs(info.offset.x) > 100 || Math.abs(info.velocity.x) > 400) {
+      x.set((info.offset.x > 0 ? 1 : -1) * 500);
+      setTimeout(onDismiss, 40);
     }
   };
 
-  const handleDragDownEnd = (_: unknown, info: PanInfo) => {
-    if (info.offset.y > 100 || info.velocity.y > 400) {
-      y.set(500);
-      setTimeout(onDismiss, 50);
+  const onDragDownEnd = (_: unknown, info: PanInfo) => {
+    if (info.offset.y > 90 || info.velocity.y > 350) {
+      y.set(400);
+      setTimeout(onDismiss, 40);
     }
   };
 
-  const isDraggable = method === "swipe" || method === "drag-down";
-  const dragDirection = method === "swipe" ? "x" : method === "drag-down" ? "y" : false;
+  const isDrag = method === "swipe" || method === "drag-down";
+  const dragDir = method === "swipe" ? "x" as const : method === "drag-down" ? "y" as const : false as const;
+
+  const hints: Partial<Record<DismissMethod, string>> = {
+    "click-outside": "Click anywhere outside",
+    swipe: "Drag left or right",
+    escape: "Press Escape on your keyboard",
+    "drag-down": "Drag downward",
+  };
 
   return (
     <motion.div
-      ref={containerRef}
-      initial={{ opacity: 0, y: 8 }}
+      ref={cardRef}
+      initial={{ opacity: 0, y: 6 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={
-        method === "swipe" || method === "drag-down"
-          ? undefined
-          : exitVariants[method]
-      }
-      transition={{ duration: 0.3, ease: "easeOut" }}
+      exit={method === "swipe" || method === "drag-down" ? undefined : exitVariants[method]}
+      transition={{ duration: 0.25, ease: "easeOut" }}
       style={
         method === "swipe"
           ? { x, rotateZ, opacity: opacityX }
@@ -137,77 +122,61 @@ function NotificationCard({
           ? { y, scale: scaleY, opacity: opacityY }
           : undefined
       }
-      drag={isDraggable ? dragDirection : false}
+      drag={isDrag ? dragDir : false}
       dragConstraints={
-        method === "swipe"
-          ? { left: 0, right: 0 }
-          : method === "drag-down"
-          ? { top: 0, bottom: 200 }
+        method === "swipe" ? { left: 0, right: 0 }
+          : method === "drag-down" ? { top: 0, bottom: 180 }
           : undefined
       }
-      dragElastic={method === "swipe" ? 1 : method === "drag-down" ? 0.3 : 0.6}
-      onDragEnd={
-        method === "swipe"
-          ? handleSwipeDragEnd
-          : method === "drag-down"
-          ? handleDragDownEnd
-          : undefined
-      }
-      className="relative w-[300px] bg-white/[0.06] border border-white/[0.08] rounded-xl p-5 select-none"
+      dragElastic={method === "swipe" ? 0.9 : 0.25}
+      onDragEnd={method === "swipe" ? onSwipeEnd : method === "drag-down" ? onDragDownEnd : undefined}
+      className={`relative w-[320px] rounded-xl bg-white shadow-[0_1px_3px_rgba(0,0,0,0.08),0_0_0_1px_rgba(0,0,0,0.04)] p-3.5 select-none ${
+        isDrag ? "cursor-grab active:cursor-grabbing" : ""
+      }`}
       role="alert"
       aria-label="Notification card"
     >
-      {method === "click-x" && (
-        <button
-          onClick={onDismiss}
-          className="absolute top-3 right-3 w-6 h-6 flex items-center justify-center text-white/30 hover:text-white/60 transition-colors rounded-md hover:bg-white/[0.06]"
-          aria-label="Dismiss notification"
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-            <path d="M2 2l8 8M10 2l-8 8" />
+      <div className="flex items-start gap-3">
+        {/* App icon */}
+        <div className="w-9 h-9 rounded-[10px] bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M18 8A6 6 0 1 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
-        </button>
-      )}
+        </div>
 
-      <div className="pr-6">
-        <p className="text-white/80 text-sm font-medium mb-1.5">New notification</p>
-        <p className="text-white/40 text-[13px] leading-relaxed">
-          Your weekly summary is ready to view. 12 updates since last Tuesday.
-        </p>
+        <div className="flex-1 min-w-0 pt-px">
+          <div className="flex items-baseline justify-between gap-2">
+            <p className="text-[13px] font-medium text-stone-900 leading-tight">Weekly Summary</p>
+            <span className="text-[11px] text-stone-400 flex-shrink-0">3m ago</span>
+          </div>
+          <p className="text-[12.5px] text-stone-500 leading-snug mt-0.5">
+            12 updates since last Tuesday. Your project is trending up.
+          </p>
+        </div>
+
+        {method === "click-x" && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onDismiss(); }}
+            className="w-6 h-6 rounded-full flex items-center justify-center text-stone-300 hover:text-stone-500 hover:bg-stone-100 transition-colors flex-shrink-0 -mr-0.5 -mt-0.5"
+            aria-label="Dismiss"
+          >
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
+              <path d="M2 2l6 6M8 2l-6 6" />
+            </svg>
+          </button>
+        )}
       </div>
 
       {method === "auto-timeout" && (
-        <div className="absolute bottom-0 left-0 right-0 h-[2px] overflow-hidden rounded-b-xl">
-          <motion.div
-            className="h-full bg-white/20"
-            style={{ width: `${progress}%` }}
-          />
+        <div className="mt-2.5 h-[2px] rounded-full bg-stone-100 overflow-hidden">
+          <div className="h-full rounded-full bg-blue-400/60 transition-none" style={{ width: `${progress}%` }} />
         </div>
       )}
 
-      {method === "swipe" && (
-        <p className="text-white/20 text-[11px] font-mono mt-3">
-          Drag left or right
-        </p>
-      )}
-      {method === "drag-down" && (
-        <p className="text-white/20 text-[11px] font-mono mt-3">
-          Drag downward
-        </p>
-      )}
-      {method === "escape" && (
-        <p className="text-white/20 text-[11px] font-mono mt-3">
-          Press Escape on your keyboard
-        </p>
-      )}
-      {method === "click-outside" && (
-        <p className="text-white/20 text-[11px] font-mono mt-3">
-          Click anywhere outside this card
-        </p>
-      )}
-      {method === "auto-timeout" && (
-        <p className="text-white/20 text-[11px] font-mono mt-3">
-          Wait for it...
+      {hints[method] && (
+        <p className="text-[10.5px] text-stone-400 mt-2.5">
+          {hints[method]}
         </p>
       )}
     </motion.div>
@@ -218,40 +187,32 @@ function UndoToast({ onUndo, onExpire }: { onUndo: () => void; onExpire: () => v
   const [progress, setProgress] = useState(100);
 
   useEffect(() => {
-    const startTime = Date.now();
-    const duration = 4000;
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime;
-      const remaining = Math.max(0, 100 - (elapsed / duration) * 100);
-      setProgress(remaining);
-      if (remaining <= 0) {
-        clearInterval(interval);
-        onExpire();
-      }
+    const start = Date.now();
+    const iv = setInterval(() => {
+      const pct = Math.max(0, 100 - ((Date.now() - start) / 4000) * 100);
+      setProgress(pct);
+      if (pct <= 0) { clearInterval(iv); onExpire(); }
     }, 16);
-    return () => clearInterval(interval);
+    return () => clearInterval(iv);
   }, [onExpire]);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 8, scale: 0.95 }}
+      initial={{ opacity: 0, y: 6, scale: 0.97 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -4, scale: 0.95 }}
+      exit={{ opacity: 0, y: -4, scale: 0.97 }}
       transition={{ duration: 0.2 }}
-      className="relative bg-white/[0.06] border border-white/[0.08] rounded-lg px-4 py-3 flex items-center gap-3"
+      className="relative rounded-lg bg-stone-900 px-4 py-2.5 flex items-center gap-3 shadow-lg"
     >
-      <span className="text-white/50 text-[13px]">Notification dismissed</span>
+      <span className="text-stone-300 text-[13px]">Notification dismissed</span>
       <button
         onClick={onUndo}
-        className="text-white/80 text-[13px] font-medium hover:text-white transition-colors underline decoration-white/30 underline-offset-2"
+        className="text-white text-[13px] font-medium hover:text-blue-300 transition-colors"
       >
         Undo
       </button>
-      <div className="absolute bottom-0 left-0 right-0 h-[1.5px] overflow-hidden rounded-b-lg">
-        <div
-          className="h-full bg-white/15 transition-none"
-          style={{ width: `${progress}%` }}
-        />
+      <div className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full overflow-hidden">
+        <div className="h-full rounded-full bg-white/20 transition-none" style={{ width: `${progress}%` }} />
       </div>
     </motion.div>
   );
@@ -261,7 +222,7 @@ export default function CoreSandbox() {
   const [activeMethod, setActiveMethod] = useState<DismissMethod>("click-x");
   const [isVisible, setIsVisible] = useState(true);
   const [showUndo, setShowUndo] = useState(false);
-  const reappearTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reappearRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleDismiss = useCallback(() => {
     if (activeMethod === "undo") {
@@ -270,16 +231,12 @@ export default function CoreSandbox() {
       return;
     }
     setIsVisible(false);
-    reappearTimeoutRef.current = setTimeout(() => {
-      setIsVisible(true);
-    }, 600);
+    reappearRef.current = setTimeout(() => setIsVisible(true), 600);
   }, [activeMethod]);
 
   const handleUndoExpire = useCallback(() => {
     setShowUndo(false);
-    reappearTimeoutRef.current = setTimeout(() => {
-      setIsVisible(true);
-    }, 600);
+    reappearRef.current = setTimeout(() => setIsVisible(true), 600);
   }, []);
 
   const handleUndo = useCallback(() => {
@@ -287,11 +244,9 @@ export default function CoreSandbox() {
     setIsVisible(true);
   }, []);
 
-  const switchMethod = (method: DismissMethod) => {
-    if (reappearTimeoutRef.current) {
-      clearTimeout(reappearTimeoutRef.current);
-    }
-    setActiveMethod(method);
+  const switchMethod = (m: DismissMethod) => {
+    if (reappearRef.current) clearTimeout(reappearRef.current);
+    setActiveMethod(m);
     setShowUndo(false);
     setIsVisible(true);
   };
@@ -299,16 +254,16 @@ export default function CoreSandbox() {
   return (
     <div className="w-full max-w-[800px] mx-auto" aria-label="Interactive dismissal demo">
       {/* Method selector */}
-      <div className="flex flex-wrap gap-1.5 mb-10 justify-center">
+      <div className="flex flex-wrap gap-1 mb-10 justify-center">
         {methods.map((m) => (
           <button
             key={m.id}
             onClick={() => switchMethod(m.id)}
             aria-pressed={activeMethod === m.id}
-            className={`px-3 py-1.5 rounded-md text-[12px] font-mono transition-all duration-200 ${
+            className={`px-3 py-1.5 rounded-lg text-[12px] font-mono transition-colors duration-150 ${
               activeMethod === m.id
-                ? "bg-white/[0.1] text-white/90"
-                : "text-white/30 hover:text-white/50 hover:bg-white/[0.04]"
+                ? "bg-stone-900 text-white"
+                : "text-stone-500 hover:text-stone-700 hover:bg-stone-100"
             }`}
           >
             {m.label}
@@ -317,7 +272,7 @@ export default function CoreSandbox() {
       </div>
 
       {/* Demo area */}
-      <div className="relative flex items-center justify-center min-h-[200px]">
+      <div className="relative flex items-center justify-center min-h-[160px]">
         <AnimatePresence mode="wait">
           {isVisible && !showUndo && (
             <NotificationCard
@@ -327,11 +282,7 @@ export default function CoreSandbox() {
             />
           )}
           {showUndo && (
-            <UndoToast
-              key="undo-toast"
-              onUndo={handleUndo}
-              onExpire={handleUndoExpire}
-            />
+            <UndoToast key="undo" onUndo={handleUndo} onExpire={handleUndoExpire} />
           )}
         </AnimatePresence>
       </div>
